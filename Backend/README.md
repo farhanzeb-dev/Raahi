@@ -116,3 +116,82 @@ The email address was not found or the password did not match.
   "message": "Invalid email or password"
 }
 ```
+
+## Get the current user's profile
+
+Returns the profile associated with the authenticated token.
+
+- **Endpoint:** `GET /users/profile`
+- **Authentication:** Required
+- **Request body:** None
+
+Authenticate using either the `token` cookie (set during login) or an
+`Authorization` header with a Bearer token:
+
+```http
+Authorization: Bearer <authentication-token>
+```
+
+If both are provided, the `token` cookie is used.
+
+### Responses
+
+#### `200 OK`
+
+The response contains a success message and the authenticated user. The
+password is not included.
+
+```json
+{
+  "message": "User profile retrieved successfully",
+  "user": {
+    "_id": "<user-id>",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane@example.com"
+  }
+}
+```
+
+#### `401 Unauthorized`
+
+The token is missing, invalid, or has been blacklisted.
+
+```json
+{
+  "message": "Invalid token, authorization denied"
+}
+```
+
+The message varies depending on the cause. For example, a missing token
+returns `"No token provided, authorization denied"`, and a blacklisted token
+returns `"Token is blacklisted, authorization denied"`.
+
+## Log out
+
+Blacklists the authenticated token and clears the `token` cookie.
+
+- **Endpoint:** `POST /users/logout`
+- **Authentication:** Required
+- **Request body:** None
+
+Use the same cookie or Bearer-token authentication described for
+[`GET /users/profile`](#get-the-current-users-profile). The token is no longer
+accepted after logout.
+
+### Responses
+
+#### `200 OK`
+
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+#### `401 Unauthorized`
+
+The token is missing, invalid, or has been blacklisted. The response message
+depends on the cause; see the profile endpoint's `401 Unauthorized` response.

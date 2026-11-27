@@ -1,38 +1,43 @@
-// Load values from the .env file into process.env.
+// Read settings from .env and place them in process.env.
+// Other files use these settings for the port, database connection, and JWT signing.
 const dotenv = require("dotenv");
 dotenv.config();
 
 const express = require("express");
 const userRoutes = require("./routes/user.routes");
+const cookieParser = require("cookie-parser");
 const app = express();
 
-// Parse form submissions and make their fields available in req.body.
+// Middleware prepares incoming request data before it reaches a route.
+// This parser handles form submissions, such as fullname.firstname=Sara.
 app.use(express.urlencoded({ extended: true }));
 
 const connectToDB = require("./db/db");
 
-// Start connecting to MongoDB.
-// This call does not wait for the connection before the server starts.
+// Begin connecting to MongoDB when this app is loaded.
+// This starts the connection but does not wait for it to finish.
 connectToDB();
 
 const cors = require("cors");
 
-// Parse JSON request bodies so routes can read req.body.
+// Parse JSON request bodies, so route code can read values from req.body.
 app.use(express.json());
 
-// Mount user endpoints under /users.
-// For example, the register endpoint becomes POST /users/register.
+// Parse cookies from incoming requests, so auth middleware can read req.cookies.
+app.use(cookieParser());
+
+// All routes in user.routes.js get the /users prefix.
+// Example: its /login route becomes /users/login.
 app.use("/users", userRoutes);
 
-// CORS is registered after the user routes.
-// Move this above app.use("/users", userRoutes) if browser-based
-// frontends on another origin need to call those routes.
+// CORS lets browser pages from other origins call this API.
+// Since this comes after /users, it may not apply to requests handled by those routes.
 app.use(cors());
 
-// A simple check that the API is responding.
+// A basic route for checking that the server responds.
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// Export the app so server.js can start it.
+// Export the configured app; server.js creates the HTTP server around it.
 module.exports = app;

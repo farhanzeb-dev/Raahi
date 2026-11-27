@@ -1,20 +1,20 @@
-// Mongoose is used to connect to and work with MongoDB.
-// consistently, so the spelling itself does not break this code.
 const mongoose = require("mongoose");
 
 function connectDB() {
-  // MONGODB_URI should be set in the .env file.
+  // Mongoose uses this connection string to find the MongoDB database.
+  // MONGODB_URI must be set in .env.
   mongoose
     .connect(process.env.MONGODB_URI, {})
     .then(() => {
+      // This runs only after MongoDB accepts the connection.
       console.log("MongoDB connected");
     })
     .catch((err) => {
-      // Stop the application if the database connection fails.
+      // If the database cannot be reached, log the reason and stop the app.
       console.log(err);
       process.exit(1);
     });
 }
 
-// Export the function so app.js can start the connection.
+// app.js calls this function to begin the database connection.
 module.exports = connectDB;
