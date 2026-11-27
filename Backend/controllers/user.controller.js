@@ -36,3 +36,40 @@ module.exports.registerUser = async (req, res, next) => {
     token,
   });
 };
+
+module.exports.loginUser = async (req, res, next) => {
+  // Check the validation results created by user.routes.js.
+  const errors = validationResult(req);
+
+  // Return the validation messages if any fields are invalid.
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  // Get the login details from the request body.
+  const { email, password } = req.body;
+  // Find the user by email and include the password field for comparison.
+  const user = await userModel.findOne({ email }).select("+password");
+
+  // If the user is not found, return an error.
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  // Check if the provided password matches the hashed password.
+  const isMatch = await user.comparePassword(password);
+
+  // If the passwords do not match, return an error.
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+// Create a JWT for the authenticated user.
+  const token = user.generateAuthToken();
+
+  // Return a success response with a message, user, and token.
+  res.status(200).json({
+    message: "Login successful",
+    user,
+    token,
+  });
+};
